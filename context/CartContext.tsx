@@ -8,6 +8,8 @@ type CartContextValue = {
   totalItems: number;
   totalPrice: number;
   addToCart: (product: Product) => void;
+  removeOneFromCart: (productId: number) => void;
+  getProductQuantity: (productId: number) => number;
   clearCart: () => void;
 };
 
@@ -53,6 +55,43 @@ export function CartProvider({ children }: CartProviderProps) {
     setItems([]);
   }
 
+  function removeOneFromCart(productId: number) {
+    setItems((currentItems) => {
+      const productInCart = currentItems.find(
+        (item) => item.product.id === productId
+      );
+
+      if (!productInCart) {
+        return currentItems;
+      }
+
+      if (productInCart.quantity === 1) {
+        return currentItems.filter((item) => item.product.id !== productId);
+      }
+
+      return currentItems.map((item) => {
+        if (item.product.id === productId) {
+          return {
+            ...item,
+            quantity: item.quantity - 1,
+          };
+        }
+
+        return item;
+      });
+    });
+  }
+
+  function getProductQuantity(productId: number) {
+    const productInCart = items.find((item) => item.product.id === productId);
+
+    if (!productInCart) {
+      return 0;
+    }
+
+    return productInCart.quantity;
+  }
+
   const totalItems = items.reduce((total, item) => {
     return total + item.quantity;
   }, 0);
@@ -68,6 +107,8 @@ export function CartProvider({ children }: CartProviderProps) {
         totalItems,
         totalPrice,
         addToCart,
+        removeOneFromCart,
+        getProductQuantity,
         clearCart,
       }}
     >

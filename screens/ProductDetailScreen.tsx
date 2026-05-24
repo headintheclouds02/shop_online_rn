@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Alert,
   Button,
   Image,
   ScrollView,
@@ -14,8 +13,9 @@ import { useProductDetail } from "../hooks/useProductDetail";
 
 export default function ProductDetailScreen({ navigation, route }: any) {
   const { productId } = route.params;
-  const { addToCart } = useCart();
+  const { addToCart, removeOneFromCart, getProductQuantity } = useCart();
   const { product, loading, error, loadProduct } = useProductDetail(productId);
+  const productQuantity = getProductQuantity(productId);
 
   function handleAddToCart() {
     if (!product) {
@@ -23,7 +23,10 @@ export default function ProductDetailScreen({ navigation, route }: any) {
     }
 
     addToCart(product);
-    Alert.alert("Prodotto aggiunto", "Il prodotto è stato aggiunto al carrello.");
+  }
+
+  function handleRemoveFromCart() {
+    removeOneFromCart(productId);
   }
 
   if (loading) {
@@ -62,7 +65,16 @@ export default function ProductDetailScreen({ navigation, route }: any) {
       </View>
 
       <View style={styles.buttons}>
-        <Button title="Aggiungi al carrello" onPress={handleAddToCart} />
+        {productQuantity === 0 ? (
+          <Button title="Aggiungi al carrello" onPress={handleAddToCart} />
+        ) : (
+          <View style={styles.quantityRow}>
+            <Button title="-" onPress={handleRemoveFromCart} />
+            <Text style={styles.quantityText}>{productQuantity}</Text>
+            <Button title="+" onPress={handleAddToCart} />
+          </View>
+        )}
+
         <View style={styles.space} />
         <Button title="Indietro" onPress={() => navigation.goBack()} />
       </View>
@@ -115,6 +127,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 8,
+  },
+  quantityRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
+  },
+  quantityText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginHorizontal: 24,
   },
   space: {
     height: 12,
